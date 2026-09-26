@@ -55,13 +55,17 @@ export default function VirtualGrid({
   const visibleRows = useMemo(() => range(startRow, endRow), [startRow, endRow])
   const visibleCols = useMemo(() => range(startCol, endCol), [startCol, endCol])
 
+  // Hooks must run unconditionally on every render: anything below the
+  // `if (!sheet) return null` early return would be skipped on the first
+  // (data-less) render and then appear once the snapshot arrives, crashing
+  // the whole grid with "Rendered more hooks than during the previous render".
+  const editingRef = useRef(editing)
+  editingRef.current = editing
+
   if (!sheet) return null
 
   const totalH = rows * ROW_H
   const totalW = cols * COL_W
-
-  const editingRef = useRef(editing)
-  editingRef.current = editing
 
   const handleCellClick = (c, r) => {
     const ed = editingRef.current

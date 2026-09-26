@@ -113,6 +113,7 @@ docker-compose.yml       db + backend + frontend 一次构建拉起
 
 ```bash
 cd backend && go test ./...
+cd frontend && npm test
 ```
 
 - `internal/engine/engine_test.go`：下游按拓扑序重算且不读旧值、直接环 / 长链间接环 / 自环
@@ -123,3 +124,6 @@ cd backend && go test ./...
   公式格结果随依赖回退、但不进乙的撤销栈；撤销重做互相独立。
 - `internal/formula/functions_test.go`：优先级/结合性、字符串转义、全部内置函数、惰性 IF、
   除零与错误传播。
+- `frontend/src/components/VirtualGrid.test.jsx`：空数据挂载 → 工作簿快照到达后网格必须正常
+  长出（渲染期挂钩数量不得在两次渲染间变化，防正式构建白屏回归）；数据更新后网格保持渲染。
+  前端测试同样在两个镜像的构建阶段执行，不过则构建失败。

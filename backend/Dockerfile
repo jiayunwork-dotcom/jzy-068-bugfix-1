@@ -22,6 +22,8 @@ WORKDIR /web
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 COPY frontend/ ./
+# Frontend render regression tests (grid must survive the first data load).
+RUN npm test
 RUN npm run build
 
 # ---- runtime stage ----

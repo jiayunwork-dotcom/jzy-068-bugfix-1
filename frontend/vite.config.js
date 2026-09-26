@@ -6,6 +6,10 @@ import react from '@vitejs/plugin-react'
 // nginx in docker compose).
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
   server: {
     host: true,
     port: 5173,
