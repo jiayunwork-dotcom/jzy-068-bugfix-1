@@ -55,13 +55,19 @@ export default function VirtualGrid({
   const visibleRows = useMemo(() => range(startRow, endRow), [startRow, endRow])
   const visibleCols = useMemo(() => range(startCol, endCol), [startCol, endCol])
 
+  // This ref must be declared before the early return below: hooks have to run
+  // in the same order on every render. Before the first snapshot arrives
+  // `sheet` is null and we return null; the snapshot then re-renders this same
+  // component instance, so adding a hook only on the "data present" path makes
+  // the hook count grow between renders ("Rendered more hooks than during the
+  // previous render") and crashes the whole grid in production.
+  const editingRef = useRef(editing)
+  editingRef.current = editing
+
   if (!sheet) return null
 
   const totalH = rows * ROW_H
   const totalW = cols * COL_W
-
-  const editingRef = useRef(editing)
-  editingRef.current = editing
 
   const handleCellClick = (c, r) => {
     const ed = editingRef.current

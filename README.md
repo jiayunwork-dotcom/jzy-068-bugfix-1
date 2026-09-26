@@ -15,7 +15,8 @@ docker compose up --build
 - PostgreSQL： localhost:5432 （用户 `collab` / 库 `collabsheet`）
 
 后端镜像构建时会自动运行全部 Go 自动化测试（拓扑重算、循环检测、行列插删引用调整、
-最后写入胜出、跨用户撤销依赖回退）；任何一个不过，镜像都构建失败。
+最后写入胜出、跨用户撤销依赖回退）；前端镜像构建时会先跑 Vitest 组件测试（含
+「首屏数据加载导致网格整块崩溃」的回归用例）再打包静态资源。任何一个不过，镜像都构建失败。
 
 打开即见示例工作簿「预算表」：`SUM` 汇总、`AVERAGE/MAX/COUNT`、跨表取「设置」表税率与
 预算上限的 `ROUND`/`IF` 判定，以及用「供应商」表做的 `VLOOKUP/INDEX/MATCH`。改任意单价或
@@ -112,8 +113,13 @@ docker-compose.yml       db + backend + frontend 一次构建拉起
 ## 测试
 
 ```bash
-cd backend && go test ./...
+cd backend && go test ./...          # 后端
+cd frontend && npm test              # 前端（npm run build 会先跑测试再打包）
 ```
+
+- 前端 `VirtualGrid.test.jsx`：先以 `sheet=null`（快照未到的首屏状态）挂载网格，再用
+  加载到的工作簿数据重渲染，断言网格正常铺出且公式计算结果可见——锁住「渲染挂钩前后两轮
+  数量不一致」导致整块白屏的回归。
 
 - `internal/engine/engine_test.go`：下游按拓扑序重算且不读旧值、直接环 / 长链间接环 / 自环
   检测、打破环后恢复、嵌套 IF+SUM。
